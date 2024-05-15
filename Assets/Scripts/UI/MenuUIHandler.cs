@@ -27,7 +27,7 @@ public class MenuUIHandler : MonoBehaviour
 
     private void SetHighScoreText()
     {
-        if (PersistentData.Instance.HighScoreName == null) 
+        if (PersistentData.Instance.HighScore == 0) 
         {
             _highScoreText.text = "Enter Name To Play";
         }
