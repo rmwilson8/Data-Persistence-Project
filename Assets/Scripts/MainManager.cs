@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -6,6 +7,9 @@ using UnityEngine.UI;
 
 public class MainManager : MonoBehaviour
 {
+    public event EventHandler OnScoreIncrease;
+    public event EventHandler OnGameOver;
+
     public Brick BrickPrefab;
     public int LineCount = 6;
     public Rigidbody Ball;
@@ -14,7 +18,7 @@ public class MainManager : MonoBehaviour
     public GameObject GameOverText;
     
     private bool m_Started = false;
-    private int m_Points;
+    private int score;
     
     private bool m_GameOver = false;
 
@@ -33,7 +37,7 @@ public class MainManager : MonoBehaviour
                 Vector3 position = new Vector3(-1.5f + step * x, 2.5f + i * 0.3f, 0);
                 var brick = Instantiate(BrickPrefab, position, Quaternion.identity);
                 brick.PointValue = pointCountArray[i];
-                brick.onDestroyed.AddListener(AddPoint);
+                brick.onDestroyed.AddListener(AddToScore);
             }
         }
     }
@@ -45,7 +49,7 @@ public class MainManager : MonoBehaviour
             if (Input.GetKeyDown(KeyCode.Space))
             {
                 m_Started = true;
-                float randomDirection = Random.Range(-1.0f, 1.0f);
+                float randomDirection = UnityEngine.Random.Range(-1.0f, 1.0f);
                 Vector3 forceDir = new Vector3(randomDirection, 1, 0);
                 forceDir.Normalize();
 
@@ -59,18 +63,31 @@ public class MainManager : MonoBehaviour
             {
                 SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
             }
+
+            else if (Input.GetKeyDown(KeyCode.Backspace))
+            {
+                SceneManager.LoadScene(0);
+            }
         }
     }
 
-    void AddPoint(int point)
+    public int GetScore()
     {
-        m_Points += point;
-        ScoreText.text = $"Score : {m_Points}";
+        return score;
+    }
+
+    private void AddToScore(int point)
+    {
+        score += point;
+        ScoreText.text = $"Score : {score}";
+        OnScoreIncrease?.Invoke(this, EventArgs.Empty);
     }
 
     public void GameOver()
     {
         m_GameOver = true;
+        OnGameOver?.Invoke(this, EventArgs.Empty);
+        PersistentData.Instance.SetHighScore(score);
         GameOverText.SetActive(true);
     }
 }
